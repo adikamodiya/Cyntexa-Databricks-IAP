@@ -1,0 +1,52 @@
+resources:
+  jobs:
+    TPC_Ecommerce_Pipeline:
+      name: TPC_Ecommerce_Pipeline
+      tasks:
+        - task_key: bronze
+          notebook_task:
+            notebook_path: /Workspace/Users/adityakamodiya@cyntexa.com/Cyntexa-Databricks-IAP/Task_2_Ingestion
+            source: WORKSPACE
+          max_retries: 1
+          min_retry_interval_millis: 0
+          disable_auto_optimization: false
+          email_notifications:
+            on_failure:
+              - adityakamodiya@cyntexa.com
+        - task_key: silver
+          depends_on:
+            - task_key: bronze
+          notebook_task:
+            notebook_path: /Workspace/Users/adityakamodiya@cyntexa.com/Cyntexa-Databricks-IAP/Task_3_silver
+            source: WORKSPACE
+          max_retries: 1
+          min_retry_interval_millis: 0
+          disable_auto_optimization: false
+        - task_key: gold
+          depends_on:
+            - task_key: silver
+          notebook_task:
+            notebook_path: /Workspace/Users/adityakamodiya@cyntexa.com/Cyntexa-Databricks-IAP/Task_4_Gold
+            source: WORKSPACE
+          min_retry_interval_millis: 900000
+          disable_auto_optimization: false
+        - task_key: data_quality_reconsilation
+          depends_on:
+            - task_key: gold
+          notebook_task:
+            notebook_path: /Workspace/Users/adityakamodiya@cyntexa.com/Cyntexa-Databricks-IAP/Task_5_Data_Quality_Reconcilation
+            source: WORKSPACE
+          max_retries: 1
+          min_retry_interval_millis: 60000
+          disable_auto_optimization: false
+          email_notifications:
+            on_success:
+              - adityakamodiya@cyntexa.com
+            on_failure:
+              - adityakamodiya@cyntexa.com
+      queue:
+        enabled: true
+      parameters:
+        - name: catalog_name
+          default: dev
+      performance_target: PERFORMANCE_OPTIMIZED
